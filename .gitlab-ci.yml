@@ -66,9 +66,10 @@ build_nrf52833dk:
 # builds the native simulator
 test_classifier:
   stage: test
+  parallel:
   # Runs job 5 times, so that gitlab creates 5 different jobs for the versions
-  matrix:
-    - MODEL_VERSION: ["v1", "v2", "v3", "v4", "v5"]
+    matrix:
+      - MODEL_VERSION: ["v1", "v2", "v3", "v4", "v5"]
   script:
     - export MODEL_VERSION=$MODEL_VERSION
     - west build -p always -b native_sim/native -d application/build application -- -DNCS_TOOLCHAIN_VERSION=NONE
