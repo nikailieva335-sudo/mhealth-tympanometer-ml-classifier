@@ -4,6 +4,8 @@
 #include <string.h>
 
 // Neuton models
+#include "nrf_edgeai_user_model.h"
+#include "nrf_edgeai_user_types.h"
 
 // Data structure
 typedef struct {
