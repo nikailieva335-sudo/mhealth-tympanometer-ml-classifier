@@ -84,10 +84,7 @@ while (fgets(line, sizeof(line), f)) {
 
     char *token = strtok(line, ",");
     p.uin = atoi(token);
-
-    char *token = strtok(line, ",");
-    p.uin = atoi(token);
-
+    
     token = strtok(NULL, ",");
     p.idx = atoi(token);
 
