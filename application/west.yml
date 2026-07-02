@@ -1,0 +1,9 @@
+manifest:
+  self:
+    path: application
+
+  projects:
+    - name: zephyr
+      url: https://github.com/zephyrproject-rtos/zephyr
+      revision: v4.2.0
+      import: true
