@@ -1,0 +1,81 @@
+# Simulation to Test The ML Models
+
+# Defines the order, test first and then build
+stages:
+- test
+- build
+
+# ci-base CI image used because it is smaller than ci.
+# host gcc/multilib, cmake, ninja, - no preinstalled Zephyr SDK
+# and no Zephyr workspace. ARM toolchain.
+
+image: zephyrprojectrtos/ci-base:v0.28.8
+
+variables:
+  ZEPHYR_SDK_VERSION: "1.0.1"
+  SDK_ROOT: "$CI_PROJECT_DIR/zephyr-sdk"
+  GIT_DEPTH: "1"
+
+# Saves information between the runs
+# If west.yml changes the cache rebuilds. If west.yml does not change, the cache
+# is reused so the SDK is only downloaded once.
+# If SDK version changes, the cache is invalidated and the SDK is downloaded again.
+
+
+cache:
+  key:
+    files:
+      - application/west.yml
+    prefix: zephyr-sdk-$ZEPHYR_SDK_VERSION
+  paths:
+    - zephyr-sdk/
+    - zephyr/
+    - modules/
+    - bootloader/
+    - .west/
+
+# Sets up the environment
+before_script:
+  - |
+    SDK_DIR="$SDK_ROOT/zephyr-sdk-$ZEPHYR_SDK_VERSION"
+    if [ ! -d "$SDK_DIR" ]; then
+      mkdir -p "$SDK_ROOT" && cd "$SDK_ROOT"
+      TARBALL="zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64_minimal.tar.xz"
+      wget -q "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VERSION}/${TARBALL}"
+      tar xf "$TARBALL" && rm "$TARBALL"
+      cd "zephyr-sdk-$ZEPHYR_SDK_VERSION"
+      ./setup.sh -t arm-zephyr-eabi -h -c
+      cd "$CI_PROJECT_DIR"
+    fi
+  - export ZEPHYR_SDK_INSTALL_DIR="$SDK_ROOT/zephyr-sdk-$ZEPHYR_SDK_VERSION"
+  - |
+    if [ ! -f .west/config ]; then
+      west init -l application
+    fi
+    west update --narrow -o=--depth=1
+    west zephyr-export
+
+# Job name for the dev kit
+# Runs in the build stage
+# Builds the application for the nrf52833dk
+build_nrf52833dk:
+  stage: build
+  script:
+    - west build -p always -b nrf52833dk/nrf52833 -d application/build application -- -DNCS_TOOLCHAIN_VERSION=NONE
+
+# builds the native simulator
+test_classifier:
+  stage: test
+  parallel:
+  # Runs job 5 times, so that gitlab creates 5 different jobs for the versions
+    matrix:
+      - MODEL_VERSION: ["v1", "v2", "v3", "v4", "v5"]
+  script:
+    - export MODEL_VERSION=$MODEL_VERSION
+    - west build -p always -b native_sim/native -d application/build application -- -DNCS_TOOLCHAIN_VERSION=NONE
+    - chmod 755 application/build/zephyr/zephyr.exe
+    - "application/build/zephyr/zephyr.exe -stop_at=0 | tee sim_out_${MODEL_VERSION}"
+    - "if grep -q ERROR sim_out_${MODEL_VERSION}; then echo 'FAILED: ERROR found in model $MODEL_VERSION'; exit 1; fi"
+  artifacts:
+    paths:
+      - application/build/zephyr/zephyr.exe

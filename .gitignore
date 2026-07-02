@@ -1,0 +1,11 @@
+build*/
+.DS_Store
+.vscode/
+.conda/
+.west/
+bootloader/
+modules/
+tools/
+zephyr/
+__pycache__/
+myvenv/
