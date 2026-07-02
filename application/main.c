@@ -31,27 +31,27 @@ const char *csv_file = NULL;
     const char *model_name = NULL;
 
     #ifdef MODEL_V1
-    csv_file = "analysis_neuton_ao.csv";
+    csv_file = "training_data/analysis_neuton_ao.csv";
     model_name = "Model V1 (AO)";
     #endif
 
     #ifdef MODEL_V2
-    csv_file = "analysis_neuton_ao_b.csv";
+    csv_file = "training_data/analysis_neuton_ao_b.csv";
     model_name = "Model V2 (AO_B)";
     #endif
 
     #ifdef MODEL_V3
-    csv_file = "analysis_neuton_ao_b_anomaly.csv";
+    csv_file = "training_data/analysis_neuton_anomaly.csv";
     model_name = "Model V3 (Anomaly Detection)";
     #endif
 
     #ifdef MODEL_V4
-    csv_file = "analysis_neuton_ao_equal.csv";
+    csv_file = "training_data/analysis_neuton_ao_b_equal.csv";
     model_name = "Model V4 (Types ABC Equalized)";
     #endif
 
     #ifdef MODEL_V5
-    csv_file = "analysis_neuton_ao_equal_A_BC.csv";
+    csv_file = "training_data/analysis_neuton_ao_b_equal_A_BC.csv";
     model_name = "Model V5 (A=B+C Equalized)";
     #endif
 
