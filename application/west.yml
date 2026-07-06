@@ -7,3 +7,7 @@ manifest:
       url: https://github.com/zephyrproject-rtos/zephyr
       revision: v4.2.0
       import: true
+    - name: sdk-edge-ai
+      url: https://github.com/nrfconnect/sdk-edge-ai
+      revision: v2.1.0
+      path: modules/lib/edge-ai
