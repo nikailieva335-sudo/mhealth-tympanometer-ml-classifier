@@ -9,3 +9,4 @@ tools/
 zephyr/
 __pycache__/
 myvenv/
+.claude

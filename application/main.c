@@ -6,6 +6,7 @@
 // Neuton models
 #include "nrf_edgeai_user_model.h"
 #include "nrf_edgeai_user_types.h"
+#include "nrf_edgeai_user_api.h" 
 
 // Data structure
 typedef struct {
@@ -84,7 +85,7 @@ while (fgets(line, sizeof(line), f)) {
 
     char *token = strtok(line, ",");
     p.uin = atoi(token);
-    
+
     token = strtok(NULL, ",");
     p.idx = atoi(token);
 
@@ -118,33 +119,20 @@ while (fgets(line, sizeof(line), f)) {
         p.samples[i] = atof(token);
     }
 
-// Double Check This
-
     nrf_edgeai_user_inputs_t model_input;
-    float min_val = p.samples[0];
-    float max_val = p.samples[0];
-    float sum = 0.0f;
 
+    // Feed features to model in the same order as the training CSV columns:
+    // no_peak, tpp, ecv, sa, est_tpp, est_ecv, tw, samples[0..59] (67 features)
+    model_input.input[0] = (float)p.no_peak;
+    model_input.input[1] = p.tpp;
+    model_input.input[2] = p.ecv;
+    model_input.input[3] = p.sa;
+    model_input.input[4] = p.est_tpp;
+    model_input.input[5] = p.est_ecv;
+    model_input.input[6] = p.tw;
     for (int i = 0; i < 60; i++) {
-        if (p.samples[i] < min_val) min_val = p.samples[i];
-        if (p.samples[i] > max_val) max_val = p.samples[i];
-        sum += p.samples[i];
+        model_input.input[7 + i] = p.samples[i];
     }
-
-    float mean_val = sum / 60.0f;
-    float range = max_val - min_val;
-
-    // Feed features to model
-    model_input.input[0] = min_val;
-    model_input.input[1] = max_val;
-    model_input.input[2] = mean_val;
-    model_input.input[3] = range;
-    model_input.input[4] = p.samples[0];
-    model_input.input[5] = p.samples[59];
-    model_input.input[6] = p.tpp;
-    model_input.input[7] = p.ecv;
-    model_input.input[8] = p.sa;
-    model_input.input[9] = p.tw;
 
     // Run Neuton model
     int ret = nrf_edgeai_user_model_run(&model_input, NULL);
